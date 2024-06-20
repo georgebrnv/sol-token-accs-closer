@@ -7,6 +7,7 @@ import bodyParser from 'body-parser';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const HELIUS_API_KEY = process.env.HELIUS_API_KEY;
 
 // Setup conenction
 // const connection = new solanaWeb3.Connection()
@@ -34,7 +35,7 @@ app.post('/', async (req: Request, res: Response) => {
 
     const ownerPublicKey = new PublicKey(publicKey);
 
-    let connection = new Connection('https://mainnet.helius-rpc.com/?api-key=fb217618-2a52-40c0-9621-38e657dbb505');
+    let connection = new Connection(`https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`);
 
     let tokenAccounts = await connection.getParsedTokenAccountsByOwner(ownerPublicKey, {
         programId: new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"),
