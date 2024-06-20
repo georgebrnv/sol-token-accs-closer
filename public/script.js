@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', async function() {
     const connectButton = document.getElementById('connectWalletButton');
     const disconnectButton = document.getElementById('disconnectWalletButton');
+    const createTransactionButton = document.getElementById('createTransactionButton');
 
     connectButton.addEventListener('click', async () => {
         if (window.solana && window.solana.isPhantom) { 
@@ -15,6 +16,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 // Update UI
                 connectButton.style.display = 'none';
                 disconnectButton.style.display = 'inline-block';
+                createTransactionButton.style.display = 'inline-block';
 
             } catch (error) {
                 console.error('An error occurred while connecting your wallet:', error);
@@ -35,6 +37,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
             // Update UI
             disconnectButton.style.display = 'none';
+            createTransactionButton.style.display = 'none';
             connectButton.style.display = 'inline-block';
 
         } catch (error) {
@@ -51,15 +54,42 @@ document.addEventListener('DOMContentLoaded', async function() {
         } catch (error) {
             console.error('An error occurred while connecting your wallet:', error);
         }
-    }
+    };
 
     // Check if wallet is connected on page load
     if (window.solana.isConnected) {
-        connectButton.style.display = 'none';
+        disconnectButton.style.display = 'inline-block';
+        createTransactionButton.style.display = 'inline-block';
     } else {
-        disconnectButton.style.display = 'none';
-    }
+        connectButton.style.display = 'inline-block';
+    };
 
-    
+    createTransactionButton.addEventListener('click', async () => {
+        if (window.solana.publicKey !== null) {
+            sendPublicKey(window.solana.publicKey);
+        } else {
+            console.log("Error sending wallet: wallet is disconnected.")
+        }
+    });
+
+    // Send wallet Public Key 
+    async function sendPublicKey(publicKey) {
+        fetch('/', await {
+           method: 'POST',
+           headers: {
+            'Content-Type': 'application/json',
+           }, 
+           body: JSON.stringify({ publicKey: publicKey.toString() })
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to send wallet data.')
+            }
+            return response.json();
+        }).then(data => {
+            console.log('Wallet data has been sent:', data);
+        }).catch(error => {
+            console.error('Error sending wallet data:', error);
+        });
+    }
 
 });

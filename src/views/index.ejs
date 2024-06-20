@@ -10,16 +10,23 @@
     <div class="container" style="align-items: center">
         <div class="box">
             <div class="row">
-                <h1>Welcome to SolCloser!</p>
-                <button id="connectWalletButton" class="button" style="background-color: green; color: white">
-                    <h3>Connect Wallet</h3>
-                </button>
-                <button id="disconnectWalletButton" class="button" style="background-color: red; color: white">
-                    <h3>Disconnect Wallet</h3>
-                </button>
+                <h1>Welcome to SolCloser!</h1>
+                    <div class="row">
+                        <button id="createTransactionButton" class="button" style="background-color: blue; color: white; display: none;">
+                            <h3>Get My SOL</h3>
+                        </button>
+                    </div>
+                    <div class="row">
+                        <button id="connectWalletButton" class="button" style="background-color: green; color: white; display: none;">
+                            <h3>Connect Wallet</h3>
+                        </button>
+                        <button id="disconnectWalletButton" class="button" style="background-color: red; color: white; display: none;">
+                            <h3>Disconnect Wallet</h3>
+                        </button>
+                    </div>
             </div>
         </div>
     </div>
-    <script type="text/javascript" src='/script.js' defer></script>
+    <script type="module" src='/script.js' defer></script>
 </body>
 </html>
